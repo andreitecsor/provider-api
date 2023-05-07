@@ -11,7 +11,7 @@ public class TcpClient {
     //For the moment, this is just for testing (later, i will integrate it with the api)
     public static void main(String[] args) throws IOException {
         String hostname = "localhost"; // server hostname
-        int port = 8070; // server port number
+        int port = 8071; // server port number
 
         try {
             // create a socket connection to the server
