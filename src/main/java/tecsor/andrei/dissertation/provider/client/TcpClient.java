@@ -1,6 +1,7 @@
 package tecsor.andrei.dissertation.provider.client;
 
 import tecsor.andrei.dissertation.provider.model.FHEOperationType;
+import tecsor.andrei.dissertation.provider.model.UserStatistics;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,34 +19,21 @@ public class TcpClient {
         // create a socket connection to the server
         try (Socket socket = new Socket(hostname, port)) {
 
-            //send the operation type
-            ByteBuffer buffer = ByteBuffer.allocate(4);
-            //Java uses network byte order (big-endian) to represent multibyte values such as integers
-            //Rust uses native byte order (little-endian)
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.putInt(FHEOperationType.ENCRYPT.value);
-            byte[] bytes = buffer.array();
+            UserStatistics userStatistics = new UserStatistics("3ac8bb5f170b7f34e5e6d74c3f0a33db186b31c7a68e5706a4f54c11693934f6",
+                    6, 10, 3, 5600, 5000, 2);
+
             OutputStream out = socket.getOutputStream();
-            out.write(bytes);
 
-            //The actual values
-            int[] values = new int[]{1, 2, 3, 4, 5};
+            //send the operation type
+            sendIntThroughSocket(out, FHEOperationType.ENCRYPT.value);
 
-            //send the number of values
-            buffer = ByteBuffer.allocate(4);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.putInt(values.length);
-            bytes = buffer.array();
-            out.write(bytes);
-
-            //send the values
-            buffer = ByteBuffer.allocate(4 * values.length);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            for (int value : values) {
-                buffer.putInt(value);
-            }
-            bytes = buffer.array();
-            out.write(bytes);
+            //send the int values from userStatistics
+            sendIntThroughSocket(out, userStatistics.getGamblingPercent());
+            sendIntThroughSocket(out, userStatistics.getOverspendingScore());
+            sendIntThroughSocket(out, userStatistics.getImpulsiveBuyingScore());
+            sendIntThroughSocket(out, userStatistics.getMeanDepositSum());
+            sendIntThroughSocket(out, userStatistics.getMeanReportedIncome());
+            sendIntThroughSocket(out, userStatistics.getNoMonthsDeposited());
 
             // receive a response from the server
             DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -57,9 +45,16 @@ public class TcpClient {
             //retrieve the encrypted values one by one
             // TODO: 20.05.2023 retrieve encrypted data and server key    
 
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void sendIntThroughSocket(OutputStream out, int value) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putInt(value);
+        byte[] bytes = buffer.array();
+        out.write(bytes);
     }
 }
