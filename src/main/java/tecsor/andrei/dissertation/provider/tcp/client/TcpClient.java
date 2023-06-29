@@ -1,25 +1,27 @@
-package tecsor.andrei.dissertation.provider.client;
+package tecsor.andrei.dissertation.provider.tcp.client;
 
+import tecsor.andrei.dissertation.provider.dto.UserStatisticsDTO;
 import tecsor.andrei.dissertation.provider.model.FHEOperationType;
 import tecsor.andrei.dissertation.provider.model.UserStatistics;
-import tecsor.andrei.dissertation.provider.model.UserStatisticsDTO;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Base64;
 
 public class TcpClient {
-    //For the moment, this is just for testing (later, i will integrate it with the api)
-    public static void main(String[] args) {
+    private TcpClient() {
+    }
+
+    public static UserStatisticsDTO getUserStatisticsDTO(UserStatistics userStatistics) {
         String hostname = "localhost"; // server hostname
         int port = 8071; // server port number
 
         // create a socket connection to the server
         try (Socket socket = new Socket(hostname, port)) {
-
-            UserStatistics userStatistics = new UserStatistics("3ac8bb5f170b7f34e5e6d74c3f0a33db186b31c7a68e5706a4f54c11693934f6",
-                    6, 10, 3, 5600, 5000, 2);
 
             OutputStream out = socket.getOutputStream();
 
@@ -46,22 +48,11 @@ public class TcpClient {
             dataInputStream.readFully(sizeBytes);
             long size = ByteBuffer.wrap(sizeBytes).order(ByteOrder.BIG_ENDIAN).getLong();
 
-            UserStatisticsDTO userStatisticsDTO = buildUserStatisticsDTO(dataInputStream, (int) size);
+            UserStatisticsDTO dto = buildUserStatisticsDTO(dataInputStream, (int) size);
 
             dataInputStream.close();
 
-            try {
-                //Use FileOutputStream to write to a file
-                FileOutputStream fileOut = new FileOutputStream("userstatisticsdto.ser");
-                //Use ObjectOutputStream to write objects
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOut);
-                objectOutputStream.writeObject(userStatisticsDTO);
-                objectOutputStream.close();
-                fileOut.close();
-                System.out.print("Serialized data is saved in userstatisticsdto.ser");
-            } catch (IOException i) {
-                i.printStackTrace();
-            }
+            return dto;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -69,39 +60,41 @@ public class TcpClient {
     }
 
     private static UserStatisticsDTO buildUserStatisticsDTO(DataInputStream dataInputStream, int size) throws IOException {
-        UserStatisticsDTO userStatisticsDTO = new UserStatisticsDTO(size);
+        UserStatisticsDTO dto = new UserStatisticsDTO();
+
+        dto.setSize(size);
 
         //Get the values from the server
         byte[] encryptedGamblingPercent = new byte[size];
         dataInputStream.readFully(encryptedGamblingPercent);
-        userStatisticsDTO.setGamblingPercent(encryptedGamblingPercent);
+        dto.setGamblingPercent(Base64.getEncoder().encodeToString(encryptedGamblingPercent));
 
         // encrypted_overspending_score
         byte[] encryptedOverspendingScore = new byte[size];
         dataInputStream.readFully(encryptedOverspendingScore);
-        userStatisticsDTO.setOverspendingScore(encryptedOverspendingScore);
+        dto.setOverspendingScore(Base64.getEncoder().encodeToString(encryptedOverspendingScore));
 
         // encrypted_impulsive_buying_score
         byte[] encryptedImpulsiveBuyingScore = new byte[size];
         dataInputStream.readFully(encryptedImpulsiveBuyingScore);
-        userStatisticsDTO.setImpulsiveBuyingScore(encryptedImpulsiveBuyingScore);
+        dto.setImpulsiveBuyingScore(Base64.getEncoder().encodeToString(encryptedImpulsiveBuyingScore));
 
         // encrypted_mean_deposit_sum
         byte[] encryptedMeanDepositSum = new byte[size];
         dataInputStream.readFully(encryptedMeanDepositSum);
-        userStatisticsDTO.setMeanDepositSum(encryptedMeanDepositSum);
+        dto.setMeanDepositSum(Base64.getEncoder().encodeToString(encryptedMeanDepositSum));
 
         // encrypted_mean_reported_income
         byte[] encryptedMeanReportedIncome = new byte[size];
         dataInputStream.readFully(encryptedMeanReportedIncome);
-        userStatisticsDTO.setMeanReportedIncome(encryptedMeanReportedIncome);
+        dto.setMeanReportedIncome(Base64.getEncoder().encodeToString(encryptedMeanReportedIncome));
 
         // encrypted_no_months_deposited
         byte[] encryptedNoMonthsDeposited = new byte[size];
         dataInputStream.readFully(encryptedNoMonthsDeposited);
-        userStatisticsDTO.setNoMonthsDeposited(encryptedNoMonthsDeposited);
+        dto.setNoMonthsDeposited(Base64.getEncoder().encodeToString(encryptedNoMonthsDeposited));
 
-        return userStatisticsDTO;
+        return dto;
     }
 
     public static void sendIntThroughSocket(OutputStream out, int value) throws IOException {
@@ -111,4 +104,5 @@ public class TcpClient {
         byte[] bytes = buffer.array();
         out.write(bytes);
     }
+
 }
