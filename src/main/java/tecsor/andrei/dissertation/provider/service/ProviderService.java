@@ -6,10 +6,12 @@ import retrofit2.Call;
 import retrofit2.Response;
 import tecsor.andrei.dissertation.provider.dto.ResultDTO;
 import tecsor.andrei.dissertation.provider.dto.UserStatisticsDTO;
+import tecsor.andrei.dissertation.provider.model.Risk;
 import tecsor.andrei.dissertation.provider.model.UserStatistics;
 
 import java.io.IOException;
 
+import static tecsor.andrei.dissertation.provider.tcp.client.TcpClient.getRiskScore;
 import static tecsor.andrei.dissertation.provider.tcp.client.TcpClient.getUserStatisticsDTO;
 
 @Component
@@ -24,11 +26,14 @@ public class ProviderService {
     @Async
     public void afterIsClientAvailable(UserStatistics userStatistics) throws IOException {
         UserStatisticsDTO userStatisticsDTO = getUserStatisticsDTO(userStatistics);
-        //todo: send to the requester
+
         Call<ResultDTO> callProcess = apiCaller.process(userStatisticsDTO);
         Response<ResultDTO> response = callProcess.execute();
+        ResultDTO resultDTO = response.body();
 
-        //todo: send to the tfhe generator for decryption
+        Risk riskScore = getRiskScore(resultDTO);
+        System.out.println(riskScore);
+
         //todo: check if the data is safe
         //todo: provide the final result
     }

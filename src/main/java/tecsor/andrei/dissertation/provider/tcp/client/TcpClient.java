@@ -1,12 +1,12 @@
 package tecsor.andrei.dissertation.provider.tcp.client;
 
+import tecsor.andrei.dissertation.provider.dto.ResultDTO;
 import tecsor.andrei.dissertation.provider.dto.UserStatisticsDTO;
 import tecsor.andrei.dissertation.provider.model.FHEOperationType;
+import tecsor.andrei.dissertation.provider.model.Risk;
 import tecsor.andrei.dissertation.provider.model.UserStatistics;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,7 +16,37 @@ public class TcpClient {
     private TcpClient() {
     }
 
-    public static UserStatisticsDTO getUserStatisticsDTO(UserStatistics userStatistics) {
+    public static Risk getRiskScore(ResultDTO resultDTO) throws IOException {
+        String hostname = "localhost"; // server hostname
+        int port = 8071; // server port number
+
+        // create a socket connection to the server
+        try (Socket socket = new Socket(hostname, port)) {
+
+            OutputStream out = socket.getOutputStream();
+
+            //send the operation type
+            sendIntThroughSocket(out, FHEOperationType.DECRYPT.value);
+
+            //send the int values from resultDTO
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            buffer.putInt(resultDTO.getSize());
+            out.write(buffer.array());
+
+            out.write(Base64.getDecoder().decode(resultDTO.getResult()));
+
+            //receive the risk score
+            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String received = input.readLine();
+            long riskScore = Long.parseLong(received);
+            System.out.println("Risk score: " + riskScore);
+            return new Risk((int) riskScore);
+
+        }
+    }
+
+    public static UserStatisticsDTO getUserStatisticsDTO(UserStatistics userStatistics) throws IOException {
         String hostname = "localhost"; // server hostname
         int port = 8071; // server port number
 
@@ -54,8 +84,6 @@ public class TcpClient {
 
             return dto;
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
