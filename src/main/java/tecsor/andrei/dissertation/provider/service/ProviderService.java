@@ -27,14 +27,16 @@ public class ProviderService {
     public void afterIsClientAvailable(UserStatistics userStatistics) throws IOException {
         UserStatisticsDTO userStatisticsDTO = getUserStatisticsDTO(userStatistics);
 
-        Call<ResultDTO> callProcess = apiCaller.process(userStatisticsDTO);
-        Response<ResultDTO> response = callProcess.execute();
-        ResultDTO resultDTO = response.body();
+        Call<ResultDTO> processCall = apiCaller.process(userStatisticsDTO);
+        Response<ResultDTO> processResponse = processCall.execute();
+        ResultDTO resultDTO = processResponse.body();
 
         Risk riskScore = getRiskScore(resultDTO);
         System.out.println(riskScore);
 
-        //todo: check if the data is safe
-        //todo: provide the final result
+        Call<Void> provideCall = apiCaller.provide(riskScore);
+        Response<Void> provideResponse = provideCall.execute();
+
+        System.out.println("Provided with status code: " + provideResponse.code());
     }
 }
