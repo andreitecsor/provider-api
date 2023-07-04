@@ -23,12 +23,15 @@ public class ProviderController {
     }
 
     @GetMapping("/{pid}")
-    public Boolean isClientAvailable(@PathVariable("pid") String pid) throws IOException {
-        UserStatistics byId = repository.findById(pid);
+    public Boolean isClientAvailable(@PathVariable("pid") String hashedPid) throws IOException {
+        System.out.println("Received request for " + hashedPid);
+        UserStatistics byId = repository.findById(hashedPid);
         if (byId != null) {
             providerService.afterIsClientAvailable(byId);
+            System.out.println("Returning true for " + hashedPid);
             return true;
         }
+        System.out.println("Returning false for " + hashedPid);
         return false;
     }
 }

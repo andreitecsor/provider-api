@@ -41,7 +41,9 @@ public class TcpClient {
             String received = input.readLine();
             long riskScore = Long.parseLong(received);
             System.out.println("Risk score: " + riskScore);
-            return new Risk((int) riskScore);
+            Risk risk = new Risk();
+            risk.setScore((int) riskScore);
+            return risk;
 
         }
     }

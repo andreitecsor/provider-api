@@ -7,8 +7,8 @@ import tecsor.andrei.dissertation.provider.model.UserStatistics;
 public class UserStatisticsRepository {
 
     public UserStatistics findById(String id) {
-        if (id.equals("3ac8bb5f170b7f34e5e6d74c3f0a33db186b31c7a68e5706a4f54c11693934f6")) {
-            return new UserStatistics("3ac8bb5f170b7f34e5e6d74c3f0a33db186b31c7a68e5706a4f54c11693934f6",
+        if (id.equals("5fae40f92758a3b94f441ab0fabf5c7d1c4082e8ae30043aefccad9af7e90b82")) {
+            return new UserStatistics("5fae40f92758a3b94f441ab0fabf5c7d1c4082e8ae30043aefccad9af7e90b82",
                     6, 10, 3, 5600, 5000, 2);
         }
         return null;

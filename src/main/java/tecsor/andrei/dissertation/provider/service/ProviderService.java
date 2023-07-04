@@ -25,15 +25,22 @@ public class ProviderService {
 
     @Async
     public void afterIsClientAvailable(UserStatistics userStatistics) throws IOException {
+        System.out.println("Sending the following user statistics: " + userStatistics + " to the tfhe-generator");
         UserStatisticsDTO userStatisticsDTO = getUserStatisticsDTO(userStatistics);
 
+        System.out.println("Sending the encrypted user statistics to the requester");
         Call<ResultDTO> processCall = apiCaller.process(userStatisticsDTO);
         Response<ResultDTO> processResponse = processCall.execute();
         ResultDTO resultDTO = processResponse.body();
 
+        System.out.println("Sending the encrypted risk score to the tfhe-generator for decryption");
+        assert resultDTO != null;
         Risk riskScore = getRiskScore(resultDTO);
-        System.out.println(riskScore);
+        riskScore.setPid(userStatistics.getPid());
+        riskScore.setFid("p1");
 
+        System.out.println("Risk score is " + riskScore + " for user with pid= " + userStatistics.getPid());
+        System.out.println("Sending the risk score to the requester");
         Call<Void> provideCall = apiCaller.provide(riskScore);
         Response<Void> provideResponse = provideCall.execute();
 

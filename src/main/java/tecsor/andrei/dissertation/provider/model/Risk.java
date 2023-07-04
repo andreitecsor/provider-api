@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Risk {
+    private String pid;
+    private String fid;
     private int score;
 }
