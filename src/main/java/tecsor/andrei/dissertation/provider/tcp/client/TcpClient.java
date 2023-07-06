@@ -40,7 +40,6 @@ public class TcpClient {
             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String received = input.readLine();
             long riskScore = Long.parseLong(received);
-            System.out.println("Risk score: " + riskScore);
             Risk risk = new Risk();
             risk.setScore((int) riskScore);
             return risk;

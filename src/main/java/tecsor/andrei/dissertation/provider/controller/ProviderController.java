@@ -13,6 +13,8 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/provider/api/v1")
 public class ProviderController {
+    public static final String ANSI_ORANGE = "\u001B[38;2;255;165;0m";
+
 
     private final ProviderService providerService;
     private final UserStatisticsRepository repository;
@@ -24,14 +26,16 @@ public class ProviderController {
 
     @GetMapping("/{pid}")
     public Boolean isClientAvailable(@PathVariable("pid") String hashedPid) throws IOException {
-        System.out.println("Received request for " + hashedPid);
+        System.out.println(ANSI_ORANGE + "Received request for " + hashedPid);
         UserStatistics byId = repository.findById(hashedPid);
         if (byId != null) {
             providerService.afterIsClientAvailable(byId);
             System.out.println("Returning true for " + hashedPid);
+            System.out.println();
             return true;
         }
         System.out.println("Returning false for " + hashedPid);
+        System.out.println();
         return false;
     }
 }
